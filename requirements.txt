@@ -1,0 +1,8 @@
+hf_xet
+ipykernel
+ipywidgets
+jupyter
+numpy
+pandas
+torch
+transformers
