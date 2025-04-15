@@ -5,8 +5,8 @@ class Config:
             groups_csv="groups.csv", messages_csv="messages.csv",
             val_split=0.2, test_split=0.2, recreate_datasets=False,
             device="cpu",
-            num_epochs=32, batch_size=32,
-            max_context_length=512, max_group_size=8,
+            num_epochs=32, batch_size=4,
+            max_context_length=128, max_group_size=6,
             output_dir="output", log="log.log",
         ):
         # Datasets
