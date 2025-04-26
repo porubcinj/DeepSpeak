@@ -8,11 +8,13 @@ def get_dataframes(cfg: Config, rng: np.random.Generator):
     train_dir = os.path.join(train_val_dir, "train")
     val_dir = os.path.join(train_val_dir, "val")
     test_dir = os.path.join(cfg.datasets_dir, "test")
+
     train_val_groups_csv_path = os.path.join(train_val_dir, cfg.groups_csv)
     train_messages_csv_path = os.path.join(train_dir, cfg.messages_csv)
     val_messages_csv_path = os.path.join(val_dir, cfg.messages_csv)
     test_groups_csv_path = os.path.join(test_dir, cfg.groups_csv)
     test_messages_csv_path = os.path.join(test_dir, cfg.messages_csv)
+
     csv_paths = (
         train_val_groups_csv_path,
         train_messages_csv_path,
@@ -20,6 +22,7 @@ def get_dataframes(cfg: Config, rng: np.random.Generator):
         test_groups_csv_path,
         test_messages_csv_path,
     )
+
     if not cfg.recreate_datasets and all(os.path.exists(csv_path) for csv_path in csv_paths):
         # Load DataFrames
         train_val_groups_df = pd.read_csv(train_val_groups_csv_path)
@@ -63,48 +66,79 @@ def get_dataframes(cfg: Config, rng: np.random.Generator):
     messages_df["next_member_id"] = messages_df.groupby("group_id", sort=False)["member_id"].shift(-1)
     messages_df = messages_df.dropna(subset=["next_member_id"])
     messages_df["next_member_id"] = messages_df["next_member_id"].astype(int)
-    assert len(messages_df) >= 1, f"No group_id with 2 or more messages found in {messages_csv}"
 
-    # Split messages_df into val and test
+    unique_group_ids = messages_df["group_id"].unique()
     num_test_group_ids = int(len(unique_group_ids) * cfg.test_split)
     test_group_ids = rng.choice(unique_group_ids, size=num_test_group_ids, replace=False)
-    messages_group_ids = messages_df["group_id"]
-    messages_test_group_ids_mask = messages_group_ids.isin(test_group_ids)
-    val_messages_df = messages_df[~messages_test_group_ids_mask]
-    test_messages_df = messages_df[messages_test_group_ids_mask]
 
-    train_rows = []
-    for group_id in unique_group_ids:
-        group_df = messages_df[messages_df["group_id"] == group_id]
-
-        assert not np.any(np.diff(group_df["member_id"].to_numpy()) == 0), f"Consecutive messages with same member_id found in {messages_csv} for group {group_id}"
-
-        message_ids = group_df["message_id"]
-        num_messages = len(message_ids)
-        assert num_messages >= 1, f"No messages found in {messages_csv} for group {group_id}"
-        assert message_ids.is_unique, f"Duplicate message_id found in {messages_csv} for group {group_id}"
-        assert message_ids.between(0, num_messages - 1).all(), f"Invalid message_id found in {messages_csv} for group {group_id}"
-
-        is_test = np.isin(group_id, test_group_ids, assume_unique=True)
-        if not is_test:
-            num_train_messages = num_messages - int(num_messages * cfg.val_split)
-            train_rows.append(val_messages_df[val_messages_df["group_id"] == group_id].iloc[:num_train_messages])
-
-    train_messages_df = pd.concat(train_rows, ignore_index=True)
-    assert len(train_messages_df) != len(val_messages_df), f"A positive validation split of {cfg.val_split} was specified, but 0 messages could be split into training dataset"
+    val_messages_df = messages_df[~messages_df["group_id"].isin(test_group_ids)].copy().reset_index(drop=True)
+    test_messages_df = messages_df[messages_df["group_id"].isin(test_group_ids)].copy().reset_index(drop=True)
 
     # Enumerate group_ids
-    train_val_group_id_map = {group_id: idx for idx, group_id in enumerate(val_messages_df["group_id"].unique())}
-    test_group_id_map = {group_id: idx for idx, group_id in enumerate(test_messages_df["group_id"].unique())}
+    train_val_group_id_map = {old_id: new_id for new_id, old_id in enumerate(val_messages_df["group_id"].unique())}
+    test_group_id_map = {old_id: new_id for new_id, old_id in enumerate(test_group_ids)}
+
+    val_messages_df["group_id"] = val_messages_df["group_id"].map(train_val_group_id_map)
+    test_messages_df["group_id"] = test_messages_df["group_id"].map(test_group_id_map)
+
+    val_messages_df["sample_id"] = (
+        (val_messages_df["member_id"] != val_messages_df["member_id"].shift()) |
+        (val_messages_df["group_id"] != val_messages_df["group_id"].shift())
+    )
+    val_messages_df["sample_id"] = val_messages_df.groupby("group_id", sort=False)["sample_id"].cumsum() - 1
+
+    test_messages_df["sample_id"] = (
+        (test_messages_df["member_id"] != test_messages_df["member_id"].shift()) |
+        (test_messages_df["group_id"] != test_messages_df["group_id"].shift())
+    ).cumsum() - 1
+    assert len(test_messages_df) >= 1, f"No group_id with 2 or more messages found in {messages_csv}"
+
+    train_messages = []
+
+    for _, v in val_messages_df.groupby("group_id", sort=False):
+        v = v.reset_index(drop=True)
+        unique_sample_ids = v["sample_id"].unique()
+        num_train_samples = len(unique_sample_ids) - int(len(unique_sample_ids) * cfg.val_split)
+
+        if num_train_samples > 0:
+            v_train = v[v["sample_id"].isin(unique_sample_ids[:num_train_samples])]
+            train_messages.append(v_train)
+
+    train_messages_df = pd.concat(train_messages, ignore_index=True)
+
+    # Generate labels
+    train_messages_df["sample_id"] = (
+        (train_messages_df["member_id"] != train_messages_df["member_id"].shift()) |
+        (train_messages_df["group_id"] != train_messages_df["group_id"].shift())
+    )
+    train_messages_df["sample_id"] = train_messages_df.groupby("group_id", sort=False)["sample_id"].cumsum() - 1
+    assert len(train_messages_df) >= 1, f"No group_id with 2 or more messages found in {messages_csv}"
+
+    val_messages_df["sample_id"] = (
+        (val_messages_df["member_id"] != val_messages_df["member_id"].shift()) |
+        (val_messages_df["group_id"] != val_messages_df["group_id"].shift())
+    )
+    val_messages_df["sample_id"] = val_messages_df.groupby("group_id", sort=False)["sample_id"].cumsum() - 1
+
+    train_counts = train_messages_df.groupby("group_id", sort=False)["sample_id"].last() + 1
+
+    val_messages_df["sample_id"] -= val_messages_df["group_id"].map(train_counts).fillna(0).astype(int)
+    val_messages_df["sample_id"] = val_messages_df["sample_id"].clip(lower=0).cumsum()
+    val_messages_df["sample_id"] += val_messages_df["group_id"]
+    val_messages_df["sample_id"] = pd.factorize(val_messages_df["sample_id"])[0]
+
+    assert len(val_messages_df) >= 1, f"No group_id with 2 or more messages found in {messages_csv}"
+
+    train_messages_df["sample_id"] = (
+        (train_messages_df["member_id"] != train_messages_df["member_id"].shift()) |
+        (train_messages_df["group_id"] != train_messages_df["group_id"].shift())
+    ).cumsum() - 1
 
     # Create val and test groups_df with new group_id mapping
-    train_val_groups_df = groups_df[groups_df["group_id"].isin(train_val_group_id_map.keys())].copy()
-    test_groups_df = groups_df[groups_df["group_id"].isin(test_group_id_map.keys())].copy()
+    train_val_groups_df = groups_df[groups_df["group_id"].isin(train_val_group_id_map.keys())].copy().reset_index(drop=True)
+    test_groups_df = groups_df[groups_df["group_id"].isin(test_group_id_map.keys())].copy().reset_index(drop=True)
     train_val_groups_df.loc[:, "group_id"] = train_val_groups_df["group_id"].map(train_val_group_id_map)
     test_groups_df.loc[:, "group_id"] = test_groups_df["group_id"].map(test_group_id_map)
-    train_messages_df.loc[:, "group_id"] = train_messages_df["group_id"].map(train_val_group_id_map)
-    val_messages_df.loc[:, "group_id"] = val_messages_df["group_id"].map(train_val_group_id_map)
-    test_messages_df.loc[:, "group_id"] = test_messages_df["group_id"].map(test_group_id_map)
 
     for csv_path in csv_paths:
         os.makedirs(os.path.dirname(csv_path), exist_ok=True)

@@ -19,54 +19,62 @@ class DeepSpeakBertDataset(Dataset):
             ) for _, group in groups_df.groupby("group_id", sort=False)
         )
 
-        # Maps group_id -> message_id -> (member_id, message_text)
-        messages = tuple(
+        # Maps group_id -> (((member_id, message_text), ...) for sample_id in group_sample_ids)
+        group_message_samples = tuple(
             tuple(
-                (int(row[0]), str(row[1]))
-                for row in group[["member_id", "message_text"]].values
-            ) for _, group in messages_df.groupby("group_id", sort=False)
+                tuple(
+                    (int(row[0]), str(row[1]))
+                    for row in sample_df[["member_id", "message_text"]].values
+                ) for _, sample_df in group_df.groupby("sample_id", sort=False)
+            ) for _, group_df in messages_df.groupby("group_id", sort=False)
         )
 
         # Maps sample_idx -> (input_ids, attention_mask)
-        self.samples = torch.empty((len(messages_df), 2, cfg.max_context_length), dtype=torch.long)
+        self.samples = torch.empty((messages_df["sample_id"].iloc[-1] + 1, 2, cfg.max_context_length), dtype=torch.long)
         # Maps sample_idx -> group_id
-        self.group_ids = torch.empty(len(messages_df), dtype=torch.long)
+        self.group_ids = torch.empty(len(self.samples), dtype=torch.long)
         # Maps sample_idx -> (cfg.max_group_size)
-        self.member_masks = torch.empty((len(messages_df), cfg.max_group_size), dtype=torch.bool)
+        self.member_masks = torch.empty((len(self.samples), cfg.max_group_size), dtype=torch.bool)
         # Maps sample_idx -> label
-        self.labels = torch.empty(len(messages_df), dtype=torch.long)
+        self.labels = torch.empty(len(self.samples), dtype=torch.long)
 
-        for i, (group_id, message_id, next_member_id) in enumerate(messages_df[["group_id", "message_id", "next_member_id"]].values):
-            group_messages = messages[group_id][:message_id + 1]
-            group_members = self.members[group_id]
-            last_sender_id = group_messages[-1][0]
+        prev_group_num_samples = 0
 
-            self.group_ids[i] = group_id
-            self.member_masks[i] = torch.tensor([
-                (idx < len(group_members)) and (idx != last_sender_id)
-                for idx in range(cfg.max_group_size)
-            ])
-            self.labels[i] = next_member_id
+        for group_id, group_df in messages_df.groupby("group_id", sort=False):
+            if group_id > 0:
+                prev_group_num_samples += len(group_message_samples[group_id - 1])
 
-            encodings = []
-            max_length = cfg.max_context_length - 1
+            for sample_id, sample_df in group_df.groupby("sample_id", sort=False):
+                group_messages = tuple(message for sample in group_message_samples[group_id][:sample_id + 1 - prev_group_num_samples] for message in sample)
+                group_members = self.members[group_id]
+                last_sender_id = group_messages[-1][0]
 
-            for member_id, message_text in reversed(group_messages):
-                if max_length <= 1:
-                    break
+                self.group_ids[sample_id] = group_id
+                self.member_masks[sample_id] = torch.tensor([
+                    (idx < len(group_members)) and (idx != last_sender_id)
+                    for idx in range(cfg.max_group_size)
+                ])
+                self.labels[sample_id] = sample_df["next_member_id"].iloc[-1]
 
-                encoding = self.tokenizer.encode(f"{member_id} {message_text}", add_special_tokens=False, truncation=True, max_length=max_length - 1) + [self.tokenizer.sep_token_id]
-                encodings.append(torch.tensor(encoding, dtype=torch.long))
-                max_length -= len(encoding)
+                encodings = []
+                max_length = cfg.max_context_length - 1
 
-            encodings.append(torch.tensor((self.tokenizer.cls_token_id,), dtype=torch.long))
+                for member_id, message_text in reversed(group_messages):
+                    if max_length <= 1:
+                        break
 
-            if max_length > 0:
-                padding = torch.full((max_length,), self.tokenizer.pad_token_id, dtype=torch.long)
-                encodings.insert(0, padding)
+                    encoding = self.tokenizer.encode(f"{member_id} {message_text}", add_special_tokens=False, truncation=True, max_length=max_length - 1) + [self.tokenizer.sep_token_id]
+                    encodings.append(torch.tensor(encoding, dtype=torch.long))
+                    max_length -= len(encoding)
 
-            self.samples[i, 0] = torch.cat(tuple(reversed(encodings)))
-            self.samples[i, 1] = self.samples[i, 0] != self.tokenizer.pad_token_id
+                encodings.append(torch.tensor((self.tokenizer.cls_token_id,), dtype=torch.long))
+
+                if max_length > 0:
+                    padding = torch.full((max_length,), self.tokenizer.pad_token_id, dtype=torch.long)
+                    encodings.insert(0, padding)
+
+                self.samples[sample_id, 0] = torch.cat(tuple(reversed(encodings)))
+                self.samples[sample_id, 1] = self.samples[sample_id, 0] != self.tokenizer.pad_token_id
 
     def __len__(self):
         return len(self.samples)
