@@ -40,7 +40,8 @@ def get_dataframes(cfg: Config, rng: np.random.Generator):
     # Check for missing values in messages_df
     groups_df = pd.read_csv(groups_csv)
     messages_df = pd.read_csv(messages_csv)
-    assert not messages_df.isnull().values.any(), f"Missing values found in {messages_csv}"
+    df = messages_df[messages_df.isnull().any(axis=1)]
+    assert df.empty, f"Missing values found in {messages_csv}: {df.iloc[0]}"
 
     # Check groups_df contains all groups in messages_df
     groups_group_ids = groups_df["group_id"]

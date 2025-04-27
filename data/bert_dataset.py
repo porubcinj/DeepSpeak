@@ -12,7 +12,7 @@ class DeepSpeakBertDataset(Dataset):
         self.tokenizer = tokenizer
 
         # Maps group_id -> member_id -> member_name
-        self._members = tuple(
+        members = tuple(
             tuple(
                 str(member_name)
                 for member_name in group["member_name"]
@@ -46,7 +46,7 @@ class DeepSpeakBertDataset(Dataset):
 
             for sample_id, sample_df in group_df.groupby("sample_id", sort=False):
                 group_messages = tuple(message for sample in group_message_samples[group_id][:sample_id + 1 - prev_group_num_samples] for message in sample)
-                group_members = self.members[group_id]
+                group_members = members[group_id]
                 last_sender_id = group_messages[-1][0]
 
                 self.group_ids[sample_id] = group_id
@@ -89,7 +89,3 @@ class DeepSpeakBertDataset(Dataset):
             },
             self.labels[idx],
         )
-
-    @property
-    def members(self):
-        return self._members
