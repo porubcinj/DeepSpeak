@@ -1,5 +1,5 @@
-from torch import nn
 import torch
+import torch.nn as nn
 
 """
 Baseline model that randomly chooses among the valid member_ids.

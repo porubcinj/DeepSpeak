@@ -1,0 +1,111 @@
+2025-04-29 09:47:25,801 - INFO: Reusing existing dataset split
+2025-04-29 09:47:26,028 - INFO: Creating/Validating samples
+2025-04-29 09:47:26,029 - INFO: # groups: 23
+2025-04-29 09:47:26,029 - INFO: Group 0
+2025-04-29 09:47:26,029 - INFO: Loading group members
+2025-04-29 09:47:26,032 - INFO: Group 1
+2025-04-29 09:47:26,032 - INFO: Loading group members
+2025-04-29 09:47:26,034 - INFO: Group 2
+2025-04-29 09:47:26,034 - INFO: Loading group members
+2025-04-29 09:47:26,037 - INFO: Group 3
+2025-04-29 09:47:26,037 - INFO: Loading group members
+2025-04-29 09:47:26,040 - INFO: Group 4
+2025-04-29 09:47:26,040 - INFO: Loading group members
+2025-04-29 09:47:26,042 - INFO: Group 5
+2025-04-29 09:47:26,042 - INFO: Loading group members
+2025-04-29 09:47:26,045 - INFO: Group 6
+2025-04-29 09:47:26,045 - INFO: Loading group members
+2025-04-29 09:47:26,048 - INFO: Group 7
+2025-04-29 09:47:26,048 - INFO: Loading group members
+2025-04-29 09:47:26,049 - INFO: Group 8
+2025-04-29 09:47:26,049 - INFO: Loading group members
+2025-04-29 09:47:26,050 - INFO: Group 9
+2025-04-29 09:47:26,050 - INFO: Loading group members
+2025-04-29 09:47:26,050 - INFO: Group 10
+2025-04-29 09:47:26,050 - INFO: Loading group members
+2025-04-29 09:47:26,053 - INFO: Group 11
+2025-04-29 09:47:26,053 - INFO: Loading group members
+2025-04-29 09:47:26,055 - INFO: Group 12
+2025-04-29 09:47:26,055 - INFO: Loading group members
+2025-04-29 09:47:26,056 - INFO: Group 13
+2025-04-29 09:47:26,056 - INFO: Loading group members
+2025-04-29 09:47:26,059 - INFO: Group 14
+2025-04-29 09:47:26,059 - INFO: Loading group members
+2025-04-29 09:47:26,062 - INFO: Group 15
+2025-04-29 09:47:26,062 - INFO: Loading group members
+2025-04-29 09:47:26,064 - INFO: Group 16
+2025-04-29 09:47:26,064 - INFO: Loading group members
+2025-04-29 09:47:26,066 - INFO: Group 17
+2025-04-29 09:47:26,066 - INFO: Loading group members
+2025-04-29 09:47:26,069 - INFO: Group 18
+2025-04-29 09:47:26,069 - INFO: Loading group members
+2025-04-29 09:47:26,070 - INFO: Group 19
+2025-04-29 09:47:26,070 - INFO: Loading group members
+2025-04-29 09:47:26,073 - INFO: Group 20
+2025-04-29 09:47:26,073 - INFO: Loading group members
+2025-04-29 09:47:26,074 - INFO: Group 21
+2025-04-29 09:47:26,074 - INFO: Loading group members
+2025-04-29 09:47:26,076 - INFO: Group 22
+2025-04-29 09:47:26,076 - INFO: Loading group members
+2025-04-29 09:47:26,080 - INFO: # groups: 7
+2025-04-29 09:47:26,080 - INFO: Group 0
+2025-04-29 09:47:26,080 - INFO: Loading group members
+2025-04-29 09:47:26,082 - INFO: Group 1
+2025-04-29 09:47:26,082 - INFO: Loading group members
+2025-04-29 09:47:26,084 - INFO: Group 2
+2025-04-29 09:47:26,084 - INFO: Loading group members
+2025-04-29 09:47:26,086 - INFO: Group 3
+2025-04-29 09:47:26,086 - INFO: Loading group members
+2025-04-29 09:47:26,088 - INFO: Group 4
+2025-04-29 09:47:26,089 - INFO: Loading group members
+2025-04-29 09:47:26,089 - INFO: Group 5
+2025-04-29 09:47:26,089 - INFO: Loading group members
+2025-04-29 09:47:26,091 - INFO: Group 6
+2025-04-29 09:47:26,091 - INFO: Loading group members
+2025-04-29 09:47:26,094 - INFO: # groups: 7
+2025-04-29 09:47:26,094 - INFO: Group 0
+2025-04-29 09:47:26,094 - INFO: Loading group members
+2025-04-29 09:47:26,096 - INFO: Group 1
+2025-04-29 09:47:26,096 - INFO: Loading group members
+2025-04-29 09:47:26,097 - INFO: Group 2
+2025-04-29 09:47:26,097 - INFO: Loading group members
+2025-04-29 09:47:26,098 - INFO: Group 3
+2025-04-29 09:47:26,098 - INFO: Loading group members
+2025-04-29 09:47:26,100 - INFO: Group 4
+2025-04-29 09:47:26,100 - INFO: Loading group members
+2025-04-29 09:47:26,103 - INFO: Group 5
+2025-04-29 09:47:26,103 - INFO: Loading group members
+2025-04-29 09:47:26,105 - INFO: Group 6
+2025-04-29 09:47:26,105 - INFO: Loading group members
+2025-04-29 09:47:26,123 - INFO: Epoch 1/256
+2025-04-29 09:47:36,355 - INFO: Train Loss: 4.9445, Train Acc: 0.0072
+2025-04-29 09:47:39,442 - INFO: Val Loss: 5.1296, Val Acc: 0.0061
+2025-04-29 09:47:39,444 - INFO: Epoch 2/256
+2025-04-29 09:47:48,985 - INFO: Train Loss: 4.9424, Train Acc: 0.0080
+2025-04-29 09:47:51,951 - INFO: Val Loss: 5.1209, Val Acc: 0.0065
+2025-04-29 09:47:51,952 - INFO: Epoch 3/256
+2025-04-29 09:48:01,557 - INFO: Train Loss: 4.9410, Train Acc: 0.0089
+2025-04-29 09:48:04,529 - INFO: Val Loss: 5.1319, Val Acc: 0.0065
+2025-04-29 09:48:04,529 - INFO: Epoch 4/256
+2025-04-29 09:48:14,006 - INFO: Train Loss: 4.9405, Train Acc: 0.0077
+2025-04-29 09:48:16,970 - INFO: Val Loss: 5.1354, Val Acc: 0.0077
+2025-04-29 09:48:16,970 - INFO: Epoch 5/256
+2025-04-29 09:48:26,553 - INFO: Train Loss: 4.9422, Train Acc: 0.0086
+2025-04-29 09:48:29,526 - INFO: Val Loss: 5.1315, Val Acc: 0.0070
+2025-04-29 09:48:29,527 - INFO: Epoch 6/256
+2025-04-29 09:48:39,037 - INFO: Train Loss: 4.9427, Train Acc: 0.0080
+2025-04-29 09:48:41,990 - INFO: Val Loss: 5.1260, Val Acc: 0.0059
+2025-04-29 09:48:41,990 - INFO: Epoch 7/256
+2025-04-29 09:48:51,528 - INFO: Train Loss: 4.9381, Train Acc: 0.0084
+2025-04-29 09:48:54,517 - INFO: Val Loss: 5.1292, Val Acc: 0.0079
+2025-04-29 09:48:54,517 - INFO: Epoch 8/256
+2025-04-29 09:49:04,044 - INFO: Train Loss: 4.9376, Train Acc: 0.0086
+2025-04-29 09:49:06,884 - INFO: Val Loss: 5.1349, Val Acc: 0.0094
+2025-04-29 09:49:06,885 - INFO: Epoch 9/256
+2025-04-29 09:49:16,462 - INFO: Train Loss: 4.9456, Train Acc: 0.0090
+2025-04-29 09:49:19,413 - INFO: Val Loss: 5.1333, Val Acc: 0.0072
+2025-04-29 09:49:19,413 - INFO: Epoch 10/256
+2025-04-29 09:49:28,818 - INFO: Train Loss: 4.9401, Train Acc: 0.0095
+2025-04-29 09:49:31,799 - INFO: Val Loss: 5.1338, Val Acc: 0.0046
+2025-04-29 09:49:31,799 - INFO: Stopping early after 10 epochs (no improvement for 8 epochs).
+2025-04-29 09:49:34,447 - INFO: Test Loss: 5.0408, Test Acc: 0.0085

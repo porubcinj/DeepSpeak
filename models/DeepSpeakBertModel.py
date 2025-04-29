@@ -1,7 +1,7 @@
 from config import Config
-from torch import nn
 from transformers import BertModel
 import torch
+import torch.nn as nn
 
 class DeepSpeakBertModel(nn.Module):
     def __init__(self, cfg: Config):
